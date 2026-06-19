@@ -15,25 +15,43 @@ This project predicts the price movement (up/down) of various altcoins using mac
 
 ```
 Altcoin-Price-Prediction/
-├── Scripts/
-│   ├── Data Collection and Processing/
-│   │   ├── News_Scrapper.ipynb          # Scrapes crypto news from multiple sources
-│   │   ├── TweetScrapper.ipynb          # Collects Twitter sentiment data
-│   │   ├── VaderSentimentsScores.ipynb  # Calculates sentiment scores
-│   │   └── Downsampler_tweets_and_news.ipynb
-│   └── Data_Modelling/
-│       ├── PycaretAllModels.ipynb       # Automated ML model comparison
-│       ├── Forward_Selection.ipynb      # Feature selection
-│       └── Random_Forest_Importance.ipynb
-├── New_Experiments/
-│   ├── Base_Datasets/                   # Market indicators (Gold, Oil, Nasdaq, S&P500)
-│   ├── Experiment_sets/                 # Processed datasets per altcoin
-│   └── New_Experiment_Scripts/
-│       ├── Experimentation_framework.ipynb
-│       └── Feature_importance.ipynb
-├── [Altcoin folders]/                   # Individual coin datasets with lag features
-├── Feature Selected Four Day Lag/       # Optimal feature sets
-└── Correlation/                         # Correlation analysis results
+├── data/
+│   ├── raw/                             # Original unmodified OHLC data per coin
+│   │   ├── Cardano/
+│   │   ├── Ethereum/
+│   │   ├── Litecoin/
+│   │   ├── Monero/
+│   │   └── Stellar/
+│   ├── processed/                       # Derived datasets (lag variants, feature-selected)
+│   │   ├── Binance/
+│   │   ├── Cardano/
+│   │   ├── Ethereum/
+│   │   ├── Litecoin/
+│   │   ├── Monero/
+│   │   ├── Stellar/
+│   │   ├── Tron/
+│   │   └── Feature_Selected_4Day_Lag/   # Optimal feature sets across all coins
+│   └── market_reference/                # External reference data
+│       # BTC, Gold, Oil, Nasdaq, S&P500, Total Market Cap, per-coin correlation inputs
+│
+├── experiments/                         # Per-coin CSV datasets + experiment notebooks
+│   ├── Binance/
+│   ├── Cardano/
+│   ├── Ethereum/
+│   ├── Litecoin/
+│   ├── Monero/
+│   ├── Ripple/
+│   ├── Stellar/
+│   └── Tron/
+│
+├── notebooks/
+│   ├── data_collection/                 # News_Scrapper, TweetScrapper, VaderSentimentsScores, Downsampler
+│   ├── modelling/                       # PycaretAllModels, Forward_Selection, Random_Forest_Importance
+│   ├── experimentation/                 # Experimentation_framework, Feature_importance, Verification
+│   └── correlation/                     # corr, btc, nasdaq_snp notebooks + reference data
+│
+└── models/
+    └── ETH_raw_prediction_model.pkl     # Saved Ethereum prediction model
 ```
 
 ## Methodology
@@ -84,7 +102,7 @@ The project implements two parallel feature engineering approaches:
 - Improves model convergence and performance
 
 **Step 6: Load Ethereum Market Data**
-- Load OHLC data from `Base_Datasets/Alt_Coin_Yearly_Rank.xlsx`
+- Load OHLC data from `data/market_reference/Alt_Coin_Yearly_Rank.xlsx`
 - Clean and convert string prices to numeric
 
 **Step 7: Generate Technical Indicators** (using `ta` library)
@@ -224,7 +242,7 @@ import pandas as pd
 from pycaret.classification import *
 
 # Load processed dataset
-data = pd.read_csv('Ethereum/RawTechnical_plus_Old.csv')
+data = pd.read_csv('experiments/Ethereum/RawTechnical_plus_Old.csv')
 
 # Setup experiment
 clf = setup(data=data, target='Price_Direction', 
@@ -243,17 +261,17 @@ save_model(final, 'eth_price_predictor')
 
 ### Data Collection Pipeline
 
-1. **Scrape News**: Run `News_Scrapper.ipynb` to collect articles
-2. **Scrape Tweets**: Run `TweetScrapper.ipynb` for social sentiment
-3. **Calculate Sentiment**: Use `VaderSentimentsScores.ipynb`
-4. **Process Features**: Run `Experimentation_framework.ipynb`
+1. **Scrape News**: Run `notebooks/data_collection/News_Scrapper.ipynb` to collect articles
+2. **Scrape Tweets**: Run `notebooks/data_collection/TweetScrapper.ipynb` for social sentiment
+3. **Calculate Sentiment**: Use `notebooks/data_collection/VaderSentimentsScores.ipynb`
+4. **Process Features**: Run `notebooks/experimentation/Experimentation_framework.ipynb`
 
 ## Experiment Configurations
 
 ### Configuration 1: Complete Feature Set
 - **Features**: 120 (Technical indicators + Sentiment + Binary + Lag features)
 - **Best Model**: Random Forest (99.05% accuracy)
-- **Dataset**: `Ethereum_final_dataset.csv`
+- **Dataset**: `experiments/Ethereum/Ethereum_final_dataset.csv`
 - **Strengths**: Highest accuracy, captures all market dynamics
 - **Use Case**: Maximum predictive power
 
